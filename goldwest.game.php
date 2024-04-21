@@ -123,7 +123,7 @@ class goldwest extends Table
             $color_name = array_shift($goldwest_color_names);
             $values[] = "('" . $player_id . "','$color','" . $player['player_canal'] . "','" . addslashes($player['player_name']) . "','" . addslashes($player['player_avatar']) . "', '$color_name')";
         }
-        $sql .= implode($values, ',');
+        $sql .= implode(',', $values);
         self::DbQuery($sql);
         self::reattributeColorsBasedOnPreferences($players, $default_colors);
         self::reloadPlayersBasicInfos();
@@ -414,7 +414,7 @@ class goldwest extends Table
         $playerId = $this->getActivePlayerId();
         $supplyTrack = $this->playerBoard->getFilledSupplyTrack($playerId, $section);
         if (count($supplyTrack) == 0)
-            throw new BgaUserException(sprintf(self::_('You cannot choose supply track %s'), $section));
+            throw new BgaUserException(sprintf($this->_('You cannot choose supply track %s'), $section));
         self::setGameStateValue(STG_CHOSEN_SUPPLY_TRACK_SECTION, $section);
         self::incStat(1, STATS_PLAYER_NB_ACTIVATE_SUPPLY_TRACK_ . $section, $playerId);
         foreach ($supplyTrack as $resourceType => $track) {
@@ -440,7 +440,7 @@ class goldwest extends Table
         // One less activated resource
         $nbResource = self::getGameStateValue(STG_NB_RESOURCES_ . $resourceType);
         if ($nbResource < 1)
-            throw new BgaUserException(self::_('You do not have enough resource'));
+            throw new BgaUserException($this->_('You do not have enough resource'));
         self::setGameStateValue(STG_NB_RESOURCES_ . $resourceType, $nbResource - 1);
         // Add resource in supply track
         $playerId = $this->getActivePlayerId();
@@ -477,24 +477,24 @@ class goldwest extends Table
             $this->checkAction("chooseBoomTown");
         }
         if ($x >= GWBoomTown::TOWN_SIZE || $y >= GWBoomTown::TOWN_SIZE)
-            throw new BgaUserException(self::_('You cannot choose this office'));
+            throw new BgaUserException($this->_('You cannot choose this office'));
 
         if (!$freeBownTown) {
             if (self::getGameStateValue(STG_USE_METAL_BOOMTOWN_USED) != 0)
-                throw new BgaUserException(self::_('You cannot choose BoomTown more than once per turn'));
+                throw new BgaUserException($this->_('You cannot choose BoomTown more than once per turn'));
             self::setGameStateValue(STG_USE_METAL_BOOMTOWN_USED, 1);
 
             $resourceCost = $this->boomtown->getPriceAtPosition($x, $y);
             foreach ($resourceCost as $resourceType) {
                 self::incGameStateValue(STG_NB_RESOURCES_ . $resourceType, -1);
                 if (self::getGameStateValue(STG_NB_RESOURCES_ . $resourceType) < 0)
-                    throw new BgaUserException(self::_('You do not have enough resources to choose this office'));
+                    throw new BgaUserException($this->_('You do not have enough resources to choose this office'));
             }
         }
 
         $tile = $this->boomtown->getAtPosition($x, $y);
         if ($tile->playerId !== null)
-            throw new BgaUserException(self::_('This office is aleady taken'));
+            throw new BgaUserException($this->_('This office is aleady taken'));
         $playerId = $this->getActivePlayerId();
         $tile->playerId = $playerId;
         $this->boomtown->save();
@@ -542,14 +542,14 @@ class goldwest extends Table
     {
         $this->checkAction("chooseFreeOccupiedBoomTown");
         if ($x >= GWBoomTown::TOWN_SIZE || $y >= GWBoomTown::TOWN_SIZE)
-            throw new BgaUserException(self::_('You cannot choose this office'));
+            throw new BgaUserException($this->_('You cannot choose this office'));
 
         $playerId = $this->getActivePlayerId();
         $tile = $this->boomtown->getAtPosition($x, $y);
         if ($tile->playerId === null || $tile->playerId == $playerId)
-            throw new BgaUserException(self::_('You must choose an office owned by another player'));
+            throw new BgaUserException($this->_('You must choose an office owned by another player'));
         if ($tile->investmentPlayerId !== null)
-            throw new BgaUserException(self::_('This office is aleady taken'));
+            throw new BgaUserException($this->_('This office is aleady taken'));
         $tile->investmentPlayerId = $playerId;
         $this->boomtown->save();
 
@@ -590,7 +590,7 @@ class goldwest extends Table
     public function chooseInvestment($cardType)
     {
         if (self::getGameStateValue(STG_USE_METAL_INVESTMENT_USED) != 0)
-            throw new BgaUserException(self::_('You cannot buy an investment more than once per turn'));
+            throw new BgaUserException($this->_('You cannot buy an investment more than once per turn'));
         self::setGameStateValue(STG_USE_METAL_INVESTMENT_USED, 1);
 
         $playerBasicInfo = $this->loadPlayersBasicInfos();
@@ -601,13 +601,13 @@ class goldwest extends Table
         $resources = $this->stateGlobalsToResources();
         $investmentCards = $this->investments->canBuyCards($resources);
         if (!array_search($cardType, $investmentCards) === false)
-            throw new BgaUserException(self::_('You do not have enough resources to buy this investment'));
+            throw new BgaUserException($this->_('You do not have enough resources to buy this investment'));
         $resourceCost = $this->investments->getPriceForCard($cardType);
         foreach ($resourceCost as $resourceType) {
             self::incGameStateValue(STG_NB_RESOURCES_ . $resourceType, -1);
             // This should not happen since "canBuyCards" already checked this
             if (self::getGameStateValue(STG_NB_RESOURCES_ . $resourceType) < 0)
-                throw new BgaUserException(self::_('You do not have enough resources to buy this investment'));
+                throw new BgaUserException($this->_('You do not have enough resources to buy this investment'));
         }
         $bonus = $this->investments->giveCardToPlayer($cardType, $playerId);
         $cardScore = $this->investments->getCardScore($cardType);
@@ -678,7 +678,7 @@ class goldwest extends Table
                 elseif ($cardEffect == INVESTMENTS_CARD_EFFECT_INFLUENCE_GO)
                     $terrainType = TERRAIN_TYPE_GOLD;
                 else
-                    throw new BgaUserException(self::_('Invalid investment card terrain type'));
+                    throw new BgaUserException($this->_('Invalid investment card terrain type'));
                 $this->notifyAllPlayers(
                     NTF_UPDATE_INVESTMENT_INFLUENCE,
                     clienttranslate('${player_name} advances on influence track ${terrain_type_name}'),
@@ -718,7 +718,7 @@ class goldwest extends Table
                 $nextState = "toUsedInvestmentCampUpgrade";
                 break;
             default:
-                throw new BgaUserException(self::_('Investment card has an invalid effect'));
+                throw new BgaUserException($this->_('Investment card has an invalid effect'));
                 break;
         }
 
@@ -744,22 +744,22 @@ class goldwest extends Table
         }
         $trackPositions = $this->shipping->canShip($playerId, $resources);
         if (!array_key_exists($resourceType, $trackPositions))
-            throw new BgaUserException(self::_('You cannot advance on this track'));
+            throw new BgaUserException($this->_('You cannot advance on this track'));
         if ($freeShipping) {
             // This should never happen since state STATE_INVESTMENT_HAS_FREE_SHIPPING_TRACK should check this
             if (self::getGameStateValue(STG_INVESTMENT_FREE_SHIPPING_TRACK_COUNT) <= 0)
-                throw new BgaUserException(self::_('You cannot advance on this track for free'));
+                throw new BgaUserException($this->_('You cannot advance on this track for free'));
             self::incGameStateValue(STG_INVESTMENT_FREE_SHIPPING_TRACK_COUNT, -1);
         } else {
             self::incGameStateValue(STG_NB_RESOURCES_ . $resourceType, -1);
             // This should never happen since "canShip" should check this
             if (self::getGameStateValue(STG_NB_RESOURCES_ . $resourceType) < 0)
-                throw new BgaUserException(self::_('You do not have enough resources to advance on this track'));
+                throw new BgaUserException($this->_('You do not have enough resources to advance on this track'));
         }
         $bonus = $this->shipping->advanceTrackAndSave($playerId, $resourceType);
         // This should never happen since "canShip" should check this
         if ($bonus === null)
-            throw new BgaUserException(self::_('You cannot advance on this track'));
+            throw new BgaUserException($this->_('You cannot advance on this track'));
 
         self::incStat(1, STATS_PLAYER_SHIPPING_DISTANCE_ . $resourceType, $playerId);
 
@@ -819,11 +819,11 @@ class goldwest extends Table
         $this->checkAction("chooseMiningToken");
         $coord = GWBoard::idToCoord($tokenId);
         if (!is_array($coord) || count($coord) != 2)
-            throw new BgaUserException(self::_('Invalid mining token position'));
+            throw new BgaUserException($this->_('Invalid mining token position'));
         $x = $coord[0];
         $y = $coord[1];
         if (!$this->board->canTokenBeTaken($x, $y))
-            throw new BgaUserException(self::_('You cannot take this mining token'));
+            throw new BgaUserException($this->_('You cannot take this mining token'));
 
         $playerBasicInfo = $this->loadPlayersBasicInfos();
         $playerId = $this->getActivePlayerId();
@@ -885,12 +885,12 @@ class goldwest extends Table
         $this->checkAction("chooseMiningTokenToView");
         $coord = GWBoard::idToCoord($tokenId);
         if (!is_array($coord) || count($coord) != 2)
-            throw new BgaUserException(self::_('Invalid mining token position'));
+            throw new BgaUserException($this->_('Invalid mining token position'));
         $x = $coord[0];
         $y = $coord[1];
 
         if (!$this->board->canTokenBeViewed($x, $y))
-            throw new BgaUserException(self::_('You cannot view this mining token'));
+            throw new BgaUserException($this->_('You cannot view this mining token'));
 
         self::incGameStateValue(STG_INVESTMENT_MINING_TOKEN_TO_VIEW_COUNT, -1);
         self::setGameStateValue(STG_CANCEL_ALLOWED, 0);
@@ -927,11 +927,11 @@ class goldwest extends Table
         $this->checkAction("chooseCampToUpgrade");
         $coord = GWBoard::idToCoord($tokenId);
         if (!is_array($coord) || count($coord) != 2)
-            throw new BgaUserException(self::_('Invalid camp position'));
+            throw new BgaUserException($this->_('Invalid camp position'));
 
         $playerId = $this->getActivePlayerId();
         if (array_search($tokenId, $this->board->getCampByPlayerId($playerId)) === false)
-            throw new BgaUserException(self::_('You must select one of your camp to upgrade'));
+            throw new BgaUserException($this->_('You must select one of your camp to upgrade'));
 
         $playerBasicInfo = $this->loadPlayersBasicInfos();
         // Get player info before modifications
@@ -960,7 +960,7 @@ class goldwest extends Table
         $this->checkAction("chooseSupplyTrackToAdd");
         $playerId = $this->getActivePlayerId();
         if (array_search($section, GWPlayerBoard::SUPPLY_TRACK_SECTIONS) === false)
-            throw new BgaUserException(self::_('Invalid supply track section'));
+            throw new BgaUserException($this->_('Invalid supply track section'));
         $miningTokenId = self::getGameStateValue(STG_CHOSEN_MINING_TOKEN_ID);
         $terrainType = TERRAIN_IDS_TO_TYPE[self::getGameStateValue(STG_CHOSEN_MINING_TOKEN_TERRAIN_ID)];
         $resources = MINING_TOKEN_RESOURCES[$terrainType][$miningTokenId];
@@ -1081,7 +1081,7 @@ class goldwest extends Table
     {
         $this->checkAction("chooseFreeResourceTrack");
         if (array_search($section, GWPlayerBoard::SUPPLY_TRACK_SECTIONS) === false)
-            throw new BgaUserException(sprintf(self::_('Invalid supply track section: %s'), $section));
+            throw new BgaUserException(sprintf($this->_('Invalid supply track section: %s'), $section));
 
         $resourceType = RESOURCE_IDS_TO_TYPE[self::getGameStateValue(STG_INVESTMENT_FREE_RESOURCE_ID)];
         self::setGameStateValue(STG_INVESTMENT_FREE_RESOURCE_ID, 0);
@@ -1141,7 +1141,7 @@ class goldwest extends Table
         $this->checkAction("tradingPostSupplyTrackAdd");
         $playerId = $this->getActivePlayerId();
         if (array_search($section, GWPlayerBoard::SUPPLY_TRACK_SECTIONS) === false)
-            throw new BgaUserException(self::_('Invalid supply track section'));
+            throw new BgaUserException($this->_('Invalid supply track section'));
 
         $resourceType = RESOURCE_IDS_TO_TYPE[self::getGameStateValue(STG_TRADING_POST_RESOURCE_ID)];
         self::setGameStateValue(STG_TRADING_POST_RESOURCE_ID, -1);
@@ -1181,7 +1181,7 @@ class goldwest extends Table
     {
         $this->checkAction("cancelTurn");
         if (self::getGameStateValue(STG_CANCEL_ALLOWED) == 0)
-            throw new BgaUserException(self::_('Cancelling turn is not allowed'));
+            throw new BgaUserException($this->_('Cancelling turn is not allowed'));
         $this->undoRestorePoint();
         $nextState = self::getGameStateValue(STG_CANCEL_GOTO_STATE);
         switch ($nextState) {
