@@ -30,12 +30,12 @@ class view_goldwest_goldwest extends game_view
 
     /*********** Place your code below:  ************/
 
-    $this->tpl['WARN_NO_UNDO_TEXT'] = $this->_('Warning: If you do this action, you will not be able to cancel your turn before this point');
-    $this->tpl['WARN_LAST_TURN_TEXT'] = $this->_('This is the last turn, there will be no "Build or Loot" phase');
-    $this->tpl['SECTION_3'] = $this->_('Section 3');
-    $this->tpl['SECTION_2'] = $this->_('Section 2');
-    $this->tpl['SECTION_1'] = $this->_('Section 1');
-    $this->tpl['SECTION_0'] = $this->_('Section 0');
+    $this->tpl['WARN_NO_UNDO_TEXT'] = self::_('Warning: If you do this action, you will not be able to cancel your turn before this point');
+    $this->tpl['WARN_LAST_TURN_TEXT'] = self::_('This is the last turn, there will be no "Build or Loot" phase');
+    $this->tpl['SECTION_3'] = self::_('Section 3');
+    $this->tpl['SECTION_2'] = self::_('Section 2');
+    $this->tpl['SECTION_1'] = self::_('Section 1');
+    $this->tpl['SECTION_0'] = self::_('Section 0');
     $this->game->board->render($this->page);
     $this->game->boomtown->render($this->page);
     $this->game->shipping->render($this->page);
